@@ -15,5 +15,4 @@ module "aws-fargate" {
   client_service_ecr_image_uri = "711489243244.dkr.ecr.us-east-1.amazonaws.com/partner-meanstack-atlas-fargate-client:latest"
 
 
-  mongodb_connection_string = "mongodb+srv://user1:a3OXflXfsGIRjdWk@cluster.0hk0l.mongodb.net/"
 }
