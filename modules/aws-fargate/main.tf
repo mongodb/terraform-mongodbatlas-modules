@@ -1,6 +1,8 @@
 data "aws_partition" "current" {}
 data "aws_region" "current" {}
 
+data aws_caller_identity "current" {}
+
 resource "aws_ecs_cluster" "my_cluster" {
   name = "partner-meanstack-atlas-fargate-1"
   tags = {
@@ -340,8 +342,7 @@ resource "aws_security_group_rule" "DefaultNetwork" {
 
 resource "aws_ecs_service" "server_service" {
   depends_on = [aws_lb_listener.server_listener]
-
-  name = "server_service-1"
+  name = "server_service"
   cluster = aws_ecs_cluster.my_cluster.id
   desired_count = 1
   launch_type = "FARGATE"
@@ -349,28 +350,10 @@ resource "aws_ecs_service" "server_service" {
   propagate_tags = "SERVICE"
   scheduling_strategy = "REPLICA"
 
-  load_balancer {
-    container_name   = "server"
-    container_port   = 5200
-    target_group_arn = aws_lb_target_group.ServerTCP5200TargetGroup.arn
-  }
-  service_registries {
-    registry_arn = aws_service_discovery_service.server_service_discovery_entry.arn
-  }
-
-  deployment_controller {
-    type = "ECS"
-  }
-
   network_configuration {
-    subnets = [
-      aws_subnet.subnet_east_a.id,
-      aws_subnet.subnet_east_b.id,
-    ]
-    security_groups = [aws_security_group.server_default_network.id]
-    assign_public_ip = "ENABLED"
+    subnets = [aws_subnet.subnet_east_a.id, aws_subnet.subnet_east_b.id]  # Replace with your subnet IDs
+    security_groups = [aws_security_group.default_network.id]         # Replace with your security group ID
   }
-
   task_definition = aws_ecs_task_definition.server_task_definition.arn
   tags = {
     environment_name = var.environmentId
@@ -381,43 +364,6 @@ resource "aws_ecs_service" "server_service" {
   lifecycle {
     ignore_changes = [tags]
   }
-}
-
-
-resource "aws_ecs_service" "ServerService" {
-  name = "ServerService"
-  cluster = aws_ecs_cluster.my_cluster.arn
-  launch_type = "FARGATE"
-  desired_count = 1
-  scheduling_strategy = "REPLICA"
-  propagate_tags = "SERVICE"
-  platform_version = "1.4.0"
-  deployment_controller {
-    type = "ECS"
-  }
-
-  network_configuration {
-    subnets = [
-      aws_subnet.subnet_east_a.id,
-      aws_subnet.subnet_east_b.id,
-    ]
-    security_groups = [aws_security_group.server_default_network.id]
-    assign_public_ip = "ENABLED"
-  }
-  load_balancer {
-    container_name = "server"
-    container_port = 5200
-    target_group_arn = aws_lb_target_group.ServerTCP5200TargetGroup.arn
-  }
-  service_registries {
-    registry_arn = aws_service_discovery_service.server_service_discovery_entry.arn
-  }
-  tags = {
-    "com.docker.compose.project" = "partner-meanstack-atlas-fargate"
-    "com.docker.compose.service" = "server"
-  }
-  task_definition = aws_ecs_task_definition.server_task_definition.arn
-  depends_on = [aws_lb_listener.server_listener]
 }
 
 resource "aws_service_discovery_service" "server_service_discovery_entry" {
@@ -434,27 +380,6 @@ resource "aws_service_discovery_service" "server_service_discovery_entry" {
   }
 }
 
-
-resource "aws_ecs_task_definition" "server_task_definition" {
-  container_definitions = jsonencode([
-    {
-      Image = "docker/ecs-searchdomain-sidecar:1.0"
-      Name = "Server_ResolvConf_InitContainer"
-    },
-    {
-      Image = var.server_service_ecr_image_uri
-      Name = "server"
-    }
-  ])
-  cpu = "256"
-  execution_role_arn = aws_iam_role.client_task_execution_role.arn
-  family = "partner-meanstack-atlas-fargate-server"
-  memory = "512"
-  network_mode = "awsvpc"
-  requires_compatibilities = [
-    "FARGATE"
-  ]
-}
 
 resource "aws_ecs_task_definition" "server_task_definition" {
   family                   = "partner-meanstack-atlas-fargate-server"
@@ -507,7 +432,35 @@ resource "aws_ecs_task_definition" "server_task_definition" {
   ])
 }
 
+resource "aws_iam_role" "AtlasIAMRole" {
+  name = "AtlasIAMRole"
 
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = "ecs-tasks.amazonaws.com",
+          AWS     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        },
+        Action = "sts:AssumeRole",
+      },
+      {
+        Effect = "Allow",
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root",
+        },
+        Action = "sts:AssumeRole",
+      },
+    ],
+  })
+
+  managed_policy_arns = [
+    "arn:${data.aws_partition.current.partition}:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy",
+    "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
+  ]
+}
 
 resource "aws_cloudwatch_log_group" "LogGroup" {
   name = "/docker-compose/partner-meanstack-atlas-fargate"
