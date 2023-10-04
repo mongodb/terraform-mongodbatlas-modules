@@ -169,3 +169,28 @@ variable "mongodb_connection_string" {
     description = "MongoDB connection string"
     type        = string
 }
+
+
+variable "vpcid" {
+  description = "aws vpc id"
+  type = string
+  default = "vpc-05535f04b8eab37bf"
+}
+
+variable "securitygroupid" {
+  description = "VPC's security groups's Id"
+  type = string
+  default = "sg-00ef8d7071c1a3b09"
+}
+
+variable "subnetip1" {
+  description = "VPC's security groups's Id"
+  type = string
+  default = "subnet-0cdc42b2b52c812bf"
+}
+
+variable "subnetip2" {
+  description = "VPC's security groups's Id"
+  type = string
+  default = "subnet-0b4b72f62625b06c2"
+}
