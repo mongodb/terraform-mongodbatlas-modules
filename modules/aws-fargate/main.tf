@@ -206,15 +206,6 @@ resource "aws_lb_listener" "server_listener" {
   }
 }
 
-#resource "aws_lb_listener" "https_listener" {
-#  load_balancer_arn = aws_lb.mean-stack-lb.arn
-#  port              = 443
-#  protocol          = "HTTPS"
-#
-#  ssl_policy = "ELBSecurityPolicy-2016-08"  # Specify your SSL policy
-#  certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/your-certificate-arn"
-#}
-
 
 resource "aws_internet_gateway" "mean-stack-internet-gateway" {
   vpc_id = aws_vpc.vpc_east.id  # Replace with your VPC ID

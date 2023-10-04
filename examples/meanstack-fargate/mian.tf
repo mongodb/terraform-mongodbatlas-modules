@@ -2,6 +2,10 @@
 module "aws-fargate" {
   source = "../../modules/aws-fargate"
 
+  public_key = ""
+  password = ["dbtestuser", "root"]
+  atlas_org_id = ""
+  private_key = ""
   database_name = ["test1","test2"]
   region = "US_EAST_1"
   database_user_name = "test1"
@@ -15,4 +19,5 @@ module "aws-fargate" {
   client_service_ecr_image_uri = "711489243244.dkr.ecr.us-east-1.amazonaws.com/partner-meanstack-atlas-fargate-client:latest"
 
 
+  mongodb_connection_string = ""
 }
