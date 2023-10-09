@@ -4,98 +4,8 @@ data "aws_region" "current" {name = "us-east-1"}
 
 data aws_caller_identity "current" {}
 
-# Define AWS provider configuration
-provider "aws" {
-  region = "us-east-1" # Change to your desired region
-}
-
-# Create DHCP Options
-resource "aws_vpc_dhcp_options" "meanstack_dhcp_options" {
-  domain_name = "ec2.internal"
-  domain_name_servers = ["AmazonProvidedDNS"]
-
-  tags = {
-    Name = "meanstack- stack DHCPOptions"
-  }
-}
-
-# Create VPC
-resource "aws_vpc" "meanstack_vpc" {
-  cidr_block = var.vpccidr
-  enable_dns_support = true
-  enable_dns_hostnames = true
-  tags = {
-    Name = "aws-meanstack-fargate-vpc"
-  }
-}
-
-# Associate VPC with DHCP Options
-resource "aws_vpc_dhcp_options_association" "meanstack_dhcp_association" {
-  vpc_id = aws_vpc.meanstack_vpc.id
-  dhcp_options_id = aws_vpc_dhcp_options.meanstack_dhcp_options.id
-}
-
-# Create Internet Gateway
-resource "aws_internet_gateway" "meanstack_igw" {
-  vpc_id = aws_vpc.meanstack_vpc.id
-}
-
-# Create Public Subnets
-resource "aws_subnet" "public_subnets" {
-  count = 2
-  vpc_id = aws_vpc.meanstack_vpc.id
-  cidr_block = element([var.public_subnet1_cidr,var.public_subnet2_cidr], count.index)
-  availability_zone = element(var.availability_zones, count.index)
-  map_public_ip_on_launch = true
-  tags = {
-    Name = "public-subnet-${count.index}"
-  }
-}
-
-# Create Private Subnets
-resource "aws_subnet" "private_subnets" {
-  count = 2
-  vpc_id = aws_vpc.meanstack_vpc.id
-  cidr_block = element([var.private_subnet1_cidr,var.private_subnet2_cidr], count.index)
-  availability_zone = element(var.availability_zones, count.index)
-  map_public_ip_on_launch = false
-  tags = {
-    Name = "private-subnet-${count.index}"
-  }
-}
-
-# Create NAT Gateways
-resource "aws_nat_gateway" "meanstack_nat_gateways" {
-  count = 2
-  allocation_id = aws_eip.nat_ips[count.index].id
-  subnet_id = element(aws_subnet.public_subnets[*].id, count.index)
-}
-
-# Create Elastic IPs for NAT Gateways
-resource "aws_eip" "nat_ips" {
-  count = 2
-}
-
-# Create Route Table for Private Subnets
-resource "aws_route_table" "private_routes" {
-  count = 2
-  vpc_id = aws_vpc.meanstack_vpc.id
-  route {
-    cidr_block = "0.0.0.0/0"
-    nat_gateway_id = element(aws_nat_gateway.meanstack_nat_gateways[*].id, count.index)
-  }
-}
-
-# Associate Private Subnets with Route Tables
-resource "aws_route_table_association" "private_subnet_association" {
-  count = 2
-  subnet_id      = element(aws_subnet.private_subnets[*].id, count.index)
-  route_table_id = element(aws_route_table.private_routes[*].id, count.index)
-}
-
-
-resource "aws_ecs_cluster" "my_cluster" {
-  name = "partner-meanstack-atlas-fargate-3"
+resource "aws_ecs_cluster" "mean-stack_cluster" {
+  name = "partner-meanstack-atlas-fargate"
   tags = {
     environment_name = var.environmentId
     Project = "MongoDbTerraformProvider"
@@ -107,34 +17,10 @@ resource "aws_ecs_cluster" "my_cluster" {
   }
 }
 
-resource "aws_security_group" "meanstack_sg" {
-  name = "meanstack-sg-3"
-  description = "Meanstack security group"
-  vpc_id = aws_vpc.meanstack_vpc.id
-  
-  # Inbound rule for port 8080
-  ingress {
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Allow traffic from anywhere
-  }
-
-  # Inbound rule for port 5200
-  ingress {
-    from_port   = 5200
-    to_port     = 5200
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Allow traffic from anywhere
-  }
-
-
-}
-
 resource "aws_ecs_service" "server_service" {
   depends_on = [aws_lb_listener.server_listener]
   name = "server_service"
-  cluster = aws_ecs_cluster.my_cluster.arn
+  cluster = aws_ecs_cluster.mean-stack_cluster.arn
   task_definition = aws_ecs_task_definition.server_task_definition.arn
   desired_count = 1
   launch_type = "FARGATE"
@@ -147,8 +33,8 @@ resource "aws_ecs_service" "server_service" {
   }
 
   network_configuration {
-    subnets = [ aws_subnet.public_subnets[0].id , aws_subnet.public_subnets[1].id]  # Replace with your subnet IDs
-    security_groups = [aws_security_group.meanstack_sg.id]         # Replace with your security group ID
+    subnets = [var.subnet-id1, var.subnet-id2]  # Replace with your subnet IDs
+    security_groups = [var. securitygroup-id]         # Replace with your security group ID
     assign_public_ip = true
   }
   service_registries {
@@ -173,7 +59,7 @@ resource "aws_ecs_service" "server_service" {
 
 resource "aws_ecs_service" "client_service" {
   name            = "client-service"
-  cluster         = aws_ecs_cluster.my_cluster.arn
+  cluster         = aws_ecs_cluster.mean-stack_cluster.arn
   task_definition = aws_ecs_task_definition.client_task_definition.arn
   launch_type     = "FARGATE"
   desired_count   = 1
@@ -184,12 +70,12 @@ resource "aws_ecs_service" "client_service" {
 
   network_configuration {
     subnets = [
-      aws_subnet.public_subnets[0].id,
-      aws_subnet.public_subnets[1].id,
+     var.subnet-id1,
+      var.subnet-id2,
     ]
 
     security_groups = [
-      aws_security_group.meanstack_sg.id
+      var. securitygroup-id,
     ]
 
     assign_public_ip = true
@@ -244,12 +130,6 @@ resource "aws_ecs_task_definition" "client_task_definition" {
           }
         },
         {
-          depends_on = [
-            {
-              "containerName"= "Client_ResolvConf_InitContainer",
-              "condition"= "SUCCESS"
-            }
-          ]
           name            = "client"
           image           = var.client_service_ecr_image_uri
           essential: true
@@ -292,9 +172,9 @@ resource "aws_ecs_task_definition" "client_task_definition" {
       "FARGATE"
     ]
   
-}
+  }
 
-resource "aws_ecs_task_definition" "server_task_definition" {
+  resource "aws_ecs_task_definition" "server_task_definition" {
     
   
     container_definitions = jsonencode([
@@ -360,8 +240,8 @@ resource "aws_ecs_task_definition" "server_task_definition" {
     network_mode             = "awsvpc"
     requires_compatibilities = ["FARGATE"]
 
-}
-
+  }
+  
 resource "aws_iam_role" "execution_role" {
   assume_role_policy = jsonencode({
     Statement = [
@@ -453,23 +333,23 @@ resource "aws_lb_target_group" "ClientTCP8080TargetGroup" {
   port = 8080
   target_type = "ip"
   protocol = "TCP"
-  vpc_id = aws_vpc.meanstack_vpc.id
+  vpc_id = var.vpc-id
 }
 
 resource "aws_lb_target_group" "ServerTCP5200TargetGroup" {
   port = 5200
   target_type = "ip"
   protocol = "TCP"
-  vpc_id = aws_vpc.meanstack_vpc.id
+  vpc_id = var.vpc-id
 }
 
 resource "aws_lb" "mean-stack-lb" {
-  name               = "mean-stack-lb-3"
+  name               = "mean-stack-lb"
   internal           = false  # Set to true for an internal NLB
   load_balancer_type = "network"
   enable_deletion_protection = false  # Setto true to enable deletion protection
 
-  subnets = [aws_subnet.public_subnets[0].id,aws_subnet.public_subnets[0].id,]  # Specify your subnet IDs
+  subnets = [var.subnet-id1, var.subnet-id2]  # Specify your subnet IDs
 }
 
 resource "aws_lb_listener" "client_listener" {
@@ -494,21 +374,20 @@ resource "aws_lb_listener" "server_listener" {
 }
 
 resource "aws_lb_target_group" "client_target_group" {
-    name        = "client-target-group-3"
+    name        = "client-target-group"
     port        = 8080
     protocol    = "TLS"
     target_type = "ip"
-    vpc_id      = aws_vpc.meanstack_vpc.id # Replace with your VPC ID
-}
+    vpc_id      = var.vpc-id # Replace with your VPC ID
+  }
 
 resource "aws_lb_target_group" "server_target_group" {
-    name        = "server-target-group-3"
+    name        = "server-target-group"
     port        = 5200
     protocol    = "TLS"
     target_type = "ip"
-    vpc_id      = aws_vpc.meanstack_vpc.id # Replace with your VPC ID
-}
-
+    vpc_id      = var.vpc-id # Replace with your VPC ID
+  }
 
 resource "aws_service_discovery_service" "client_service_discovery_entry" {
   description = "Client service discovery entry in Cloud Map"
@@ -528,8 +407,8 @@ resource "aws_service_discovery_service" "client_service_discovery_entry" {
 
 resource "aws_service_discovery_private_dns_namespace" "cloud_map" {
   description = "Service Map for Docker Compose project partner-meanstack-atlas-fargate"
-  name = "partner-meanstackatlas-fargate.local"
-  vpc = aws_vpc.meanstack_vpc.id
+  name = "partner-meanstack-atlas-fargate-4.local"
+  vpc = var.vpc-id
 }
 
 
@@ -551,7 +430,7 @@ resource "aws_service_discovery_service" "server_service_discovery_entry" {
 }
 
 resource "aws_iam_role" "AtlasIAMRole" {
-  name = "AtlasIAMRole-3"
+  name = "AtlasIAMRole-4"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -581,5 +460,5 @@ resource "aws_iam_role" "AtlasIAMRole" {
 }
 
 resource "aws_cloudwatch_log_group" "LogGroup" {
-  name = "/docker-compose/partner-meanstack-atlas-fargate-3"
+  name = "/docker-compose/partner-meanstack-atlas-fargate"
 }

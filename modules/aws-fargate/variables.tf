@@ -39,11 +39,6 @@ variable profile {
   default = "default"
 }
 
-variable org_id {
-  description = "MongoDB Cloud Organization ID."
-  type = string
-}
-
 variable project_name {
   description = "Name of project."
   type = string
@@ -54,17 +49,6 @@ variable cluster_name {
   description = "Name of cluster as it appears in Atlas. Once created, the name can't be changed."
   type = string
   default = "Cluster-1"
-}
-
-variable database_user_name {
-  description = "MongoDB Atlas database user name."
-  type = string
-  default = "testUser"
-}
-
-variable database_password {
-  description = "MongoDB Atlas database user password."
-  type = string
 }
 
 variable cluster_instance_size {
@@ -150,14 +134,6 @@ variable "private_key" {
   description = "Private API key to authenticate to Atlas"
   type        = string
 }
-variable "password" {
-  description = "MongoDB Atlas User Password"
-  type        = list(string)
-}
-variable "database_name" {
-  description = "The Database in the cluster"
-  type        = list(string)
-}
 
 
 variable "mongodb_connection_string" {
@@ -166,24 +142,25 @@ variable "mongodb_connection_string" {
 }
 
 
-variable "vpcid" {
+variable "vpc-id" {
   description = "aws vpc id"
   type = string
+
 }
 
-variable "securitygroupid" {
-  description = "VPC's security groups's Id"
+variable "securitygroup-id" {
+  description = "VPC's security groups's Id that allows TCP 8080 and TCP 5200"
+  type = string
+
+}
+
+variable "subnet-id1" {
+  description = "public subnet Id"
   type = string
 }
 
-variable "subnetid1" {
-  description = "VPC's public subnet Id"
+variable "subnet-id2" {
+  description = "public subnet Id"
   type = string
+
 }
-
-variable "subnetid2" {
-  description = "VPC's public subnet Id"
-  type = string
-}
-
-
