@@ -4,8 +4,8 @@ data "aws_region" "current" {name = "us-east-1"}
 
 data aws_caller_identity "current" {}
 
-resource "aws_ecs_cluster" "my_cluster" {
-  name = "partner-meanstack-atlas-fargate-2"
+resource "aws_ecs_cluster" "mean-stack_cluster" {
+  name = "partner-meanstack-atlas-fargate"
   tags = {
     environment_name = var.environmentId
     Project = "MongoDbTerraformProvider"
@@ -20,7 +20,7 @@ resource "aws_ecs_cluster" "my_cluster" {
 resource "aws_ecs_service" "server_service" {
   depends_on = [aws_lb_listener.server_listener]
   name = "server_service"
-  cluster = aws_ecs_cluster.my_cluster.arn
+  cluster = aws_ecs_cluster.mean-stack_cluster.arn
   task_definition = aws_ecs_task_definition.server_task_definition.arn
   desired_count = 1
   launch_type = "FARGATE"
@@ -33,8 +33,8 @@ resource "aws_ecs_service" "server_service" {
   }
 
   network_configuration {
-    subnets = [var.subnetip1, var.subnetip2]  # Replace with your subnet IDs
-    security_groups = [var.securitygroupid]         # Replace with your security group ID
+    subnets = [var.subnet-id1, var.subnet-id2]  # Replace with your subnet IDs
+    security_groups = [var. securitygroup-id]         # Replace with your security group ID
     assign_public_ip = true
   }
   service_registries {
@@ -59,7 +59,7 @@ resource "aws_ecs_service" "server_service" {
 
 resource "aws_ecs_service" "client_service" {
   name            = "client-service"
-  cluster         = aws_ecs_cluster.my_cluster.arn
+  cluster         = aws_ecs_cluster.mean-stack_cluster.arn
   task_definition = aws_ecs_task_definition.client_task_definition.arn
   launch_type     = "FARGATE"
   desired_count   = 1
@@ -70,12 +70,12 @@ resource "aws_ecs_service" "client_service" {
 
   network_configuration {
     subnets = [
-     var.subnetip1,
-      var.subnetip2,
+     var.subnet-id1,
+      var.subnet-id2,
     ]
 
     security_groups = [
-      var.securitygroupid,
+      var. securitygroup-id,
     ]
 
     assign_public_ip = true
@@ -333,23 +333,23 @@ resource "aws_lb_target_group" "ClientTCP8080TargetGroup" {
   port = 8080
   target_type = "ip"
   protocol = "TCP"
-  vpc_id = var.vpcid
+  vpc_id = var.vpc-id
 }
 
 resource "aws_lb_target_group" "ServerTCP5200TargetGroup" {
   port = 5200
   target_type = "ip"
   protocol = "TCP"
-  vpc_id = var.vpcid
+  vpc_id = var.vpc-id
 }
 
 resource "aws_lb" "mean-stack-lb" {
-  name               = "mean-stack-lb-2"
+  name               = "mean-stack-lb"
   internal           = false  # Set to true for an internal NLB
   load_balancer_type = "network"
   enable_deletion_protection = false  # Setto true to enable deletion protection
 
-  subnets = [var.subnetip1, var.subnetip2]  # Specify your subnet IDs
+  subnets = [var.subnet-id1, var.subnet-id2]  # Specify your subnet IDs
 }
 
 resource "aws_lb_listener" "client_listener" {
@@ -374,19 +374,19 @@ resource "aws_lb_listener" "server_listener" {
 }
 
 resource "aws_lb_target_group" "client_target_group" {
-    name        = "client-target-group-2"
+    name        = "client-target-group"
     port        = 8080
     protocol    = "TLS"
     target_type = "ip"
-    vpc_id      = var.vpcid # Replace with your VPC ID
+    vpc_id      = var.vpc-id # Replace with your VPC ID
   }
 
 resource "aws_lb_target_group" "server_target_group" {
-    name        = "server-target-group-2"
+    name        = "server-target-group"
     port        = 5200
     protocol    = "TLS"
     target_type = "ip"
-    vpc_id      = var.vpcid # Replace with your VPC ID
+    vpc_id      = var.vpc-id # Replace with your VPC ID
   }
 
 resource "aws_service_discovery_service" "client_service_discovery_entry" {
@@ -407,8 +407,8 @@ resource "aws_service_discovery_service" "client_service_discovery_entry" {
 
 resource "aws_service_discovery_private_dns_namespace" "cloud_map" {
   description = "Service Map for Docker Compose project partner-meanstack-atlas-fargate"
-  name = "partner-meanstack-atlas-fargate.local"
-  vpc = var.vpcid
+  name = "partner-meanstack-atlas-fargate-4.local"
+  vpc = var.vpc-id
 }
 
 
@@ -430,7 +430,7 @@ resource "aws_service_discovery_service" "server_service_discovery_entry" {
 }
 
 resource "aws_iam_role" "AtlasIAMRole" {
-  name = "AtlasIAMRole-2"
+  name = "AtlasIAMRole-4"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -460,5 +460,5 @@ resource "aws_iam_role" "AtlasIAMRole" {
 }
 
 resource "aws_cloudwatch_log_group" "LogGroup" {
-  name = "/docker-compose/partner-meanstack-atlas-fargate-2"
+  name = "/docker-compose/partner-meanstack-atlas-fargate"
 }

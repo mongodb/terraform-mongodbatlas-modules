@@ -27,11 +27,6 @@ variable public_subnet2_cidr {
   default = "10.0.144.0/20"
 }
 
-variable web_access_cidr {
-  description = "CIDR block to allow access to web application."
-  type = string
-}
-
 variable vpccidr {
   description = "CIDR block for VPC."
   type = string
@@ -44,11 +39,6 @@ variable profile {
   default = "default"
 }
 
-variable org_id {
-  description = "MongoDB Cloud Organization ID."
-  type = string
-}
-
 variable project_name {
   description = "Name of project."
   type = string
@@ -59,17 +49,6 @@ variable cluster_name {
   description = "Name of cluster as it appears in Atlas. Once created, the name can't be changed."
   type = string
   default = "Cluster-1"
-}
-
-variable database_user_name {
-  description = "MongoDB Atlas database user name."
-  type = string
-  default = "testUser"
-}
-
-variable database_password {
-  description = "MongoDB Atlas database user password."
-  type = string
 }
 
 variable cluster_instance_size {
@@ -155,14 +134,6 @@ variable "private_key" {
   description = "Private API key to authenticate to Atlas"
   type        = string
 }
-variable "password" {
-  description = "MongoDB Atlas User Password"
-  type        = list(string)
-}
-variable "database_name" {
-  description = "The Database in the cluster"
-  type        = list(string)
-}
 
 
 variable "mongodb_connection_string" {
@@ -171,26 +142,25 @@ variable "mongodb_connection_string" {
 }
 
 
-variable "vpcid" {
+variable "vpc-id" {
   description = "aws vpc id"
   type = string
-  default = "vpc-05535f04b8eab37bf"
+
 }
 
-variable "securitygroupid" {
-  description = "VPC's security groups's Id"
+variable "securitygroup-id" {
+  description = "VPC's security groups's Id that allows TCP 8080 and TCP 5200"
   type = string
-  default = "sg-00ef8d7071c1a3b09"
+
 }
 
-variable "subnetip1" {
-  description = "VPC's security groups's Id"
+variable "subnet-id1" {
+  description = "public subnet Id"
   type = string
-  default = "subnet-0cdc42b2b52c812bf"
 }
 
-variable "subnetip2" {
-  description = "VPC's security groups's Id"
+variable "subnet-id2" {
+  description = "public subnet Id"
   type = string
-  default = "subnet-0b4b72f62625b06c2"
+
 }
