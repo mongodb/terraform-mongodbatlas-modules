@@ -5,17 +5,17 @@ module "aws-fargate" {
   database_name = ["test1","test2"]
   region = "US_EAST_1"
   database_user_name = "test1"
-  database_password = "root"
+  database_password = ""
 
-  org_id = "63350255419cf25e3d511c95"
+  org_id = ""
   server_service_ecr_image_uri = "711489243244.dkr.ecr.us-east-1.amazonaws.com/partner-meanstack-atlas-fargate-server"
   availability_zones = ["us-east-1a" , "us-east-1b"]
   environmentId = "dev"
   client_service_ecr_image_uri = "711489243244.dkr.ecr.us-east-1.amazonaws.com/partner-meanstack-atlas-fargate-client:latest"
-  atlas_org_id = "63350255419cf25e3d511c95"
+  atlas_org_id = ""
   public_key = "ghewvngy"
-  password = ["dbtestuser", "root"]
-  private_key = "e0702d6b-b062-4a70-bbd0-7044c4f50f75"
+  password = ["", ""]
+  private_key = ""
   mongodb_connection_string = "mongodb+srv://<connstring>"
 
   securitygroupid = "sg-00ef8d7071c1a3b09"
