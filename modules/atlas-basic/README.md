@@ -19,13 +19,13 @@ All the quickstart templates create an Atlas Project, Cluster, Database User and
 
 ## MongoDB Atlas CFN Resources used by the templates
 
-- [MongoDB::Atlas::Cluster](../../mongodbatlas/resource_mongodbatlas_cluster.go)
-- [MongoDB::Atlas::ProjectIpAccessList](../../mongodbatlas/fw_resource_mongodbatlas_project_ip_access_list.go)
-- [MongoDB::Atlas::DatabaseUser](../../mongodbatlas/fw_resource_mongodbatlas_database_user.go)
-- [MongoDB::Atlas::Project](../../mongodbatlas/fw_resource_mongodbatlas_project.go)
-- [MongoDB::Atlas::NetworkPeering](../../mongodbatlas/resource_mongodbatlas_network_peering.go)
-- [MongoDB::Atlas::NetworkContainer](../../mongodbatlas/resource_mongodbatlas_network_container.go)
-- [MongoDB::Atlas::PrivateEndpoint](../../mongodbatlas/resource_mongodbatlas_privatelink_endpoint.go)
+- [mongodbatlas_cluster]
+- [mongodbatlas_project_ip_access_list]
+- [mongodbatlas_database_user]
+- [mongodbatlas_project]
+- [mongodbatlas_network_peering]
+- [mongodbatlas_Network_container]
+- [mongodbatlas_privatelink_endpoint]
 
 
 ## Environment Configured by the Partner Solution templates
