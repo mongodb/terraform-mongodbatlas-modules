@@ -27,11 +27,6 @@ variable public_subnet2_cidr {
   default = "10.0.144.0/20"
 }
 
-variable web_access_cidr {
-  description = "CIDR block to allow access to web application."
-  type = string
-}
-
 variable vpccidr {
   description = "CIDR block for VPC."
   type = string
@@ -174,23 +169,21 @@ variable "mongodb_connection_string" {
 variable "vpcid" {
   description = "aws vpc id"
   type = string
-  default = "vpc-05535f04b8eab37bf"
 }
 
 variable "securitygroupid" {
   description = "VPC's security groups's Id"
   type = string
-  default = "sg-00ef8d7071c1a3b09"
 }
 
-variable "subnetip1" {
-  description = "VPC's security groups's Id"
+variable "subnetid1" {
+  description = "VPC's public subnet Id"
   type = string
-  default = "subnet-0cdc42b2b52c812bf"
 }
 
-variable "subnetip2" {
-  description = "VPC's security groups's Id"
+variable "subnetid2" {
+  description = "VPC's public subnet Id"
   type = string
-  default = "subnet-0b4b72f62625b06c2"
 }
+
+

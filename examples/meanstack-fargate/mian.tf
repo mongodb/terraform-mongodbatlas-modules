@@ -9,7 +9,6 @@ module "aws-fargate" {
 
   org_id = "63350255419cf25e3d511c95"
   server_service_ecr_image_uri = "711489243244.dkr.ecr.us-east-1.amazonaws.com/partner-meanstack-atlas-fargate-server"
-  web_access_cidr = "10.0.0.0/16"
   availability_zones = ["us-east-1a" , "us-east-1b"]
   environmentId = "dev"
   client_service_ecr_image_uri = "711489243244.dkr.ecr.us-east-1.amazonaws.com/partner-meanstack-atlas-fargate-client:latest"
@@ -17,6 +16,11 @@ module "aws-fargate" {
   public_key = "ghewvngy"
   password = ["dbtestuser", "root"]
   private_key = "e0702d6b-b062-4a70-bbd0-7044c4f50f75"
-  mongodb_connection_string = "mongodb+srv://testUser:root@cluster-1.prrp2.mongodb.net/"
+  mongodb_connection_string = "mongodb+srv://<connstring>"
+
+  securitygroupid = "sg-00ef8d7071c1a3b09"
+  subnetid1 = "subnet-0cdc42b2b52c812bf"
+  subnetid2 = "subnet-0b4b72f62625b06c2"
+  vpcid = "vpc-05535f04b8eab37bf"
 
 }
