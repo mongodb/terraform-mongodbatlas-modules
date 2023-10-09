@@ -10,7 +10,7 @@ module "aws-fargate" {
   region = "US_EAST_1"
   server_service_ecr_image_uri = ""
   availability_zones = ["us-east-1a" , "us-east-1b"]
-  environmentId = "dev"
+  environmentId = "development"
   client_service_ecr_image_uri = ""
   mongodb_connection_string = ""
 
